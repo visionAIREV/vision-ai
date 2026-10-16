@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#10251d">
+<title>Vision AI — Pengenal Benda Langsung</title>
+<style>
+:root{--bg:#0b1411;--panel:#14231d;--panel2:#1b3027;--line:#2b493b;--text:#f2f7f3;--muted:#a9beb1;--accent:#8be0a8;--accent2:#c2f5d0;--danger:#ff8d8d}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1b392b 0,#0b1411 52%);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh}
+header{padding:22px 18px 14px;max-width:1100px;margin:auto} .brand{display:flex;align-items:center;gap:12px}.logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,#9df0b4,#38a96a);display:grid;place-items:center;color:#0b2415;font-size:25px;font-weight:900;box-shadow:0 8px 28px #2cb56b33}
+h1{font-size:clamp(23px,4vw,34px);margin:0;letter-spacing:-.7px}.sub{color:var(--muted);margin:6px 0 0;font-size:14px}
+main{max-width:1100px;margin:auto;padding:8px 18px 34px;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.85fr);gap:16px}
+.panel{background:linear-gradient(160deg,#172920,#101b16);border:1px solid var(--line);border-radius:22px;padding:15px;box-shadow:0 16px 45px #0002;min-width:0}
+.section-title{font-weight:750;font-size:16px;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pill{font-size:11px;letter-spacing:.4px;background:#234533;color:var(--accent2);padding:6px 9px;border-radius:999px;font-weight:800}
+.stage{position:relative;background:#050907;border-radius:16px;overflow:hidden;aspect-ratio:4/3;display:grid;place-items:center;border:1px solid #284034}
+video,canvas{position:absolute;width:100%;height:100%;inset:0;object-fit:cover}canvas{pointer-events:none}.placeholder{padding:26px;text-align:center;color:var(--muted);max-width:330px}.placeholder .cam{font-size:42px;margin-bottom:8px}.placeholder strong{display:block;color:var(--text);font-size:16px;margin-bottom:7px}
+.statusline{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:12px 2px;color:var(--muted);font-size:12px}.status{display:inline-flex;align-items:center;gap:7px}.dot{width:8px;height:8px;background:#879b8d;border-radius:50%}.dot.live{background:#70ef9b;box-shadow:0 0 12px #70ef9b}
+.controls{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}.btn{border:1px solid #3b5c49;border-radius:12px;background:#20392c;color:var(--text);padding:12px 15px;font-weight:750;font-size:14px;cursor:pointer;transition:.15s}.btn:hover{filter:brightness(1.15)}.btn:disabled{opacity:.45;cursor:not-allowed}.btn.primary{background:var(--accent);border-color:var(--accent);color:#0b2415}.btn.stop{background:#3a2424;border-color:#684040;color:#ffdede}.btn.small{padding:9px 11px;font-size:12px}
+.setting{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #2b4035}.setting:last-child{border-bottom:0}.setting label{font-size:13px;color:#d8e6dc}.setting small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+select,input[type=range]{accent-color:var(--accent)}select{background:#20392c;color:var(--text);border:1px solid #42604e;border-radius:9px;padding:8px;max-width:145px}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}.metric{background:#1a2d23;border:1px solid #2c4738;border-radius:14px;padding:12px}.metric .num{font-size:25px;font-weight:850;color:var(--accent2);line-height:1.1}.metric .label{font-size:11px;color:var(--muted);margin-top:5px}
+.detect-list{display:flex;flex-direction:column;gap:8px;max-height:310px;overflow:auto}.empty{border:1px dashed #3a5947;border-radius:13px;padding:18px 12px;color:var(--muted);font-size:13px;text-align:center}
+.object{display:flex;align-items:center;gap:10px;background:#1a2c22;border:1px solid #2b4435;border-radius:12px;padding:10px 11px}.object-icon{width:34px;height:34px;border-radius:10px;background:#2a4b37;display:grid;place-items:center;font-size:17px;flex-shrink:0}.obj-main{min-width:0;flex:1}.obj-name{font-weight:750;font-size:13px;text-transform:capitalize}.obj-meta{font-size:11px;color:var(--muted);margin-top:3px}.confidence{font-size:12px;font-weight:800;color:var(--accent2)}
+.note{font-size:12px;line-height:1.55;color:var(--muted);background:#13241a;border-left:3px solid #75cb91;border-radius:7px;padding:11px 12px;margin-top:14px}.warning{color:#f7d8a0}.footer{max-width:1100px;margin:0 auto;padding:0 18px 25px;color:#80998a;font-size:11px;text-align:center}
+.hidden{display:none!important}
+@media(max-width:800px){main{grid-template-columns:1fr;padding:8px 12px 25px;gap:12px}header{padding:18px 12px 12px}.panel{padding:12px;border-radius:18px}.stage{aspect-ratio:4/3}.detect-list{max-height:240px}}
+@media(max-width:380px){.btn{padding:10px 11px;font-size:12px}.statusline{font-size:11px}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="logo">◎</div><div><h1>Vision AI</h1><p class="sub">Pengenal benda langsung melalui kamera</p></div></div></header>
+<main>
+<section class="panel">
+  <h2 class="section-title">Kamera langsung <span class="pill" id="engineBadge">AI SIAP DIMUAT</span></h2>
+  <div class="stage" id="stage">
+    <video id="video" autoplay muted playsinline class="hidden"></video>
+    <canvas id="overlay" class="hidden"></canvas>
+    <div class="placeholder" id="placeholder"><div class="cam">📷</div><strong>Kamera belum aktif</strong>Tekan <b>Mulai Pengenalan</b>, lalu izinkan akses kamera pada browser.</div>
+  </div>
+  <div class="statusline"><span class="status"><i class="dot" id="statusDot"></i><span id="statusText">Menunggu kamera</span></span><span id="fpsText">— FPS</span></div>
+  <div class="controls">
+    <button class="btn primary" id="startBtn">▶ Mulai Pengenalan</button>
+    <button class="btn stop" id="stopBtn" disabled>■ Berhenti</button>
+    <button class="btn" id="switchBtn" disabled>↻ Ganti Kamera</button>
+  </div>
+  <div class="note" id="message">Model AI mendeteksi objek umum di dalam gambar. Untuk hasil terbaik, gunakan pencahayaan cukup dan arahkan kamera ke benda dengan jelas.</div>
+</section>
+<aside class="panel">
+  <h2 class="section-title">Hasil pengenalan <span class="pill" id="liveBadge">LIVE</span></h2>
+  <div class="metric-grid">
+    <div class="metric"><div class="num" id="countMetric">0</div><div class="label">Objek terlihat</div></div>
+    <div class="metric"><div class="num" id="uniqueMetric">0</div><div class="label">Jenis objek</div></div>
+  </div>
+  <h3 class="section-title">Objek terdeteksi <button class="btn small" id="clearBtn">Bersihkan</button></h3>
+  <div class="detect-list" id="detectList"><div class="empty">Belum ada objek terdeteksi.<br>Mulai kamera untuk melihat hasil AI.</div></div>
+  <div style="margin-top:16px">
+    <h3 class="section-title">Pengaturan</h3>
+    <div class="setting"><div><label for="threshold">Ambang keyakinan</label><small>Objek di bawah nilai ini disembunyikan</small></div><strong id="thresholdLabel">45%</strong></div>
+    <input id="threshold" type="range" min="20" max="90" value="45" style="width:100%">
+    <div class="setting"><div><label for="voiceToggle">Sebutkan objek</label><small>Browser membacakan objek yang baru muncul</small></div><input type="checkbox" id="voiceToggle"></div>
+    <div class="setting"><div><label for="boxToggle">Tampilkan kotak deteksi</label><small>Kotak dan label pada video</small></div><input type="checkbox" id="boxToggle" checked></div>
+    <div class="setting"><div><label for="facingSelect">Kamera</label><small>Depan atau belakang</small></div><select id="facingSelect"><option value="environment">Belakang</option><option value="user">Depan</option></select></div>
+  </div>
+  <div class="note warning">Catatan: model bawaan mengenali sekitar 80 kategori objek umum (misalnya orang, mobil, botol, kursi, laptop, dan hewan), bukan setiap benda di dunia. Model perlu diunduh saat pertama kali digunakan.</div>
+</aside>
+</main>
+<div class="footer">Vision AI • Pemrosesan deteksi berjalan di browser setelah model dimuat. Kamera memerlukan izin dan umumnya membutuhkan HTTPS.</div>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+<script>
+(() => {
+ const $ = id => document.getElementById(id);
+ const video=$('video'), canvas=$('overlay'), ctx=canvas.getContext('2d');
+ let model=null, stream=null, running=false, busy=false, raf=0, facing='environment', lastTime=0, frames=0, fps=0, lastSpoken=new Map(), seenNow=new Set();
+ const emojiMap={person:'🧍',bicycle:'🚲',car:'🚗',motorcycle:'🏍️',airplane:'✈️',bus:'🚌',train:'🚆',truck:'🚚',boat:'🛥️',traffic_light:'🚦',fire_hydrant:'🚒',stop_sign:'🛑',bench:'🪑',bird:'🐦',cat:'🐈',dog:'🐕',horse:'🐎',sheep:'🐑',cow:'🐄',elephant:'🐘',bear:'🐻',zebra:'🦓',giraffe:'🦒',backpack:'🎒',umbrella:'☂️',handbag:'👜',tie:'👔',suitcase:'🧳',frisbee:'🥏',skis:'🎿',snowboard:'🏂',sports_ball:'⚽',kite:'🪁',baseball_bat:'⚾',baseball_glove:'🥎',skateboard:'🛹',surfboard:'🏄',tennis_racket:'🎾',bottle:'🍼',wine_glass:'🍷',cup:'☕',fork:'🍴',knife:'🔪',spoon:'🥄',bowl:'🥣',banana:'🍌',apple:'🍎',sandwich:'🥪',orange:'🍊',broccoli:'🥦',carrot:'🥕',hot_dog:'🌭',pizza:'🍕',donut:'🍩',cake:'🍰',chair:'🪑',couch:'🛋️',potted_plant:'🪴',bed:'🛏️',dining_table:'🪑',toilet:'🚽',tv:'📺',laptop:'💻',mouse:'🖱️',remote:'🎛️',keyboard:'⌨️',cell_phone:'📱',microwave:'♨️',oven:'🍳',toaster:'🍞',sink:'🚰',refrigerator:'🧊',book:'📘',clock:'🕒',vase:'🏺',scissors:'✂️',teddy_bear:'🧸',hair_drier:'💨',toothbrush:'🪥'};
+ const labelMap={person:'Orang',bicycle:'Sepeda',car:'Mobil',motorcycle:'Sepeda motor',airplane:'Pesawat',bus:'Bus',train:'Kereta',truck:'Truk',boat:'Perahu',traffic_light:'Lampu lalu lintas',bird:'Burung',cat:'Kucing',dog:'Anjing',horse:'Kuda',cow:'Sapi',bottle:'Botol',cup:'Cangkir',chair:'Kursi',couch:'Sofa',potted_plant:'Tanaman pot',laptop:'Laptop',mouse:'Mouse',keyboard:'Keyboard',cell_phone:'Ponsel',book:'Buku',clock:'Jam',backpack:'Ransel',umbrella:'Payung',banana:'Pisang',apple:'Apel',orange:'Jeruk',pizza:'Pizza',tv:'Televisi',refrigerator:'Kulkas',scissors:'Gunting',toothbrush:'Sikat gigi'};
+ function niceName(c){return labelMap[c]||c.replaceAll('_',' ').replace(/\b\w/g,x=>x.toUpperCase())}
+ function setStatus(s,live=false){$('statusText').textContent=s;$('statusDot').classList.toggle('live',live)}
+ function resizeCanvas(){if(!video.videoWidth)return;canvas.width=video.videoWidth;canvas.height=video.videoHeight}
+ function stopCamera(){
+   running=false;cancelAnimationFrame(raf);
+   if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+   video.pause();video.srcObject=null;video.classList.add('hidden');canvas.classList.add('hidden');$('placeholder').classList.remove('hidden');
+   $('startBtn').disabled=false;$('stopBtn').disabled=true;$('switchBtn').disabled=true;
+   $('fpsText').textContent='— FPS';$('engineBadge').textContent='AI SIAP';setStatus('Kamera berhenti');
+   ctx.clearRect(0,0,canvas.width,canvas.height);
+ }
+ async function loadModel(){
+   if(model)return model;
+   $('engineBadge').textContent='MEMUAT AI…';setStatus('Memuat model AI…');
+   if(!window.tf||!window.cocoSsd)throw new Error('Library AI tidak berhasil dimuat. Periksa koneksi internet lalu muat ulang halaman.');
+   await tf.ready();
+   model=await cocoSsd.load({base:'lite_mobilenet_v2'});
+   $('engineBadge').textContent='AI AKTIF';return model;
+ }
+ async function startCamera(){
+   if(!navigator.mediaDevices?.getUserMedia){alert('Browser tidak mendukung akses kamera. Buka aplikasi melalui HTTPS (misalnya GitHub Pages) dan gunakan browser terbaru.');return}
+   $('startBtn').disabled=true;
+   try{
+     await loadModel();
+     if(stream)stream.getTracks().forEach(t=>t.stop());
+     stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:facing},width:{ideal:1280},height:{ideal:720}}});
+     video.srcObject=stream;await video.play();
+     $('placeholder').classList.add('hidden');video.classList.remove('hidden');canvas.classList.remove('hidden');
+     resizeCanvas();running=true;$('stopBtn').disabled=false;$('switchBtn').disabled=false;
+     $('engineBadge').textContent='AI AKTIF';setStatus('Mengenali objek secara langsung',true);
+     lastTime=performance.now();frames=0;loop();
+   }catch(e){
+     $('startBtn').disabled=false;setStatus('Kamera/model belum siap');
+     $('message').textContent=e.name==='NotAllowedError'?'Akses kamera ditolak. Izinkan Camera/Kamera pada pengaturan browser, lalu coba lagi.':(e.message||'Tidak dapat membuka kamera.');
+     alert('Tidak dapat memulai kamera atau AI: '+(e.message||e.name)+'\n\nPastikan halaman dibuka lewat HTTPS, izin kamera diaktifkan, dan koneksi internet tersedia untuk memuat model.');
+   }
+ }
+ async function loop(){
+   if(!running||busy)return;
+   if(video.readyState>=2&&model){
+     busy=true;
+     try{
+       resizeCanvas();
+       const preds=await model.detect(video,20,Number($('threshold').value)/100);
+       const threshold=Number($('threshold').value)/100;
+       const filtered=preds.filter(p=>p.score>=threshold);
+       drawBoxes($('boxToggle').checked?filtered:[]);
+       updateList(filtered);
+       frames++;const now=performance.now();if(now-lastTime>=1000){fps=Math.round(frames*1000/(now-lastTime));frames=0;lastTime=now;$('fpsText').textContent=fps+' FPS'}
+     }catch(e){console.error(e)}
+     busy=false;
+   }
+   if(running)raf=requestAnimationFrame(loop);
+ }
+ function drawBoxes(preds){
+   ctx.clearRect(0,0,canvas.width,canvas.height);
+   const scaleX=canvas.width/video.videoWidth,scaleY=canvas.height/video.videoHeight;
+   preds.forEach(p=>{
+     const [x,y,w,h]=p.bbox.map((v,i)=>v*(i%2===0?scaleX:scaleY));
+     const title=niceName(p.class)+' '+Math.round(p.score*100)+'%';
+     ctx.font='bold 15px system-ui';const tw=ctx.measureText(title).width;
+     ctx.lineWidth=Math.max(2,canvas.width/450);ctx.strokeStyle='#82f4a4';ctx.fillStyle='#82f4a4';
+     ctx.strokeRect(x,y,w,h);ctx.fillRect(x,Math.max(0,y-25),tw+14,25);
+     ctx.fillStyle='#092014';ctx.fillText(title,x+7,Math.max(17,y-7));
+   });
+ }
+ function updateList(preds){
+   const counts=new Map();
+   preds.forEach(p=>{const old=counts.get(p.class);if(!old||old.score<p.score)counts.set(p.class,p)});
+   $('countMetric').textContent=preds.length;$('uniqueMetric').textContent=counts.size;
+   if(!preds.length){$('detectList').innerHTML='<div class="empty">Belum ada objek yang memenuhi ambang keyakinan.<br>Coba arahkan kamera ke objek yang lebih jelas.</div>';seenNow.clear();return}
+   const sorted=[...counts.values()].sort((a,b)=>b.score-a.score);
+   $('detectList').innerHTML=sorted.map(p=>`<div class="object"><div class="object-icon">${emojiMap[p.class]||'🔎'}</div><div class="obj-main"><div class="obj-name">${niceName(p.class)}</div><div class="obj-meta">Keyakinan AI • ${Math.round(p.score*100)}%</div></div><div class="confidence">${Math.round(p.score*100)}%</div></div>`).join('');
+   const current=new Set(sorted.map(p=>p.class));
+   if($('voiceToggle').checked&&'speechSynthesis'in window){
+     for(const p of sorted){const prev=lastSpoken.get(p.class)||0;if(!seenNow.has(p.class)&&Date.now()-prev>7000){const u=new SpeechSynthesisUtterance(niceName(p.class));u.lang='id-ID';u.rate=1.05;speechSynthesis.speak(u);lastSpoken.set(p.class,Date.now());break}}
+   }
+   seenNow=current;
+ }
+ $('startBtn').addEventListener('click',startCamera);
+ $('stopBtn').addEventListener('click',stopCamera);
+ $('switchBtn').addEventListener('click',async()=>{facing=facing==='environment'?'user':'environment';$('facingSelect').value=facing;if(running)await startCamera()});
+ $('facingSelect').addEventListener('change',async e=>{facing=e.target.value;if(running)await startCamera()});
+ $('threshold').addEventListener('input',e=>$('thresholdLabel').textContent=e.target.value+'%');
+ $('boxToggle').addEventListener('change',()=>{if(!$('boxToggle').checked)ctx.clearRect(0,0,canvas.width,canvas.height)});
+ $('clearBtn').addEventListener('click',()=>{$('detectList').innerHTML='<div class="empty">Daftar dibersihkan. Deteksi langsung akan diperbarui.</div>';lastSpoken.clear()});
+ window.addEventListener('pagehide',stopCamera);
+})();
+</script>
+</body>
+</html>
